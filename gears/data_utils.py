@@ -6,6 +6,7 @@ sc.settings.verbosity = 0
 from tqdm import tqdm
 import requests
 import os, sys
+from scipy.sparse import issparse
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -81,7 +82,8 @@ def get_dropout_non_zero_genes(adata):
     for i, j in conditions2index.items():
         condition2mean_expression[i] = np.mean(adata.X[j], axis = 0)
     pert_list = np.array(list(condition2mean_expression.keys()))
-    mean_expression = np.array(list(condition2mean_expression.values())).reshape(len(adata.obs.condition.unique()), adata.X.toarray().shape[1])
+    _adata = adata.X.toarray() if issparse(adata.X) else adata.X
+    mean_expression = np.array(list(condition2mean_expression.values())).reshape(len(adata.obs.condition.unique()), _adata.shape[1])
     ctrl = mean_expression[np.where(pert_list == 'ctrl')[0]]
     
     ## in silico modeling and upperbounding
